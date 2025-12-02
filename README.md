@@ -34,15 +34,16 @@ Visit `http://localhost:5000` for the UI, `/api/stats` for JSON. Change port wit
   The script pulls the image, compares digests, and restarts the container only when the image changes.
 
 ## Snapshots & Cron (for live Minecraft worlds)
-- Safely snapshot a live ledger DB using the SQLite backup API:
+- Safe snapshot of the live ledger DB (uses SQLite backup API, read-only source):
   ```bash
   python scripts/snapshot_ledger.py --src /path/to/world/ledger.sqlite --dst /path/to/app/ledger.sqlite
   ```
-- Schedule every 30 minutes (example cron):
+- Suggested cron (every 30 minutes) to refresh the snapshot and warm the API cache:
   ```
   */30 * * * * python /path/to/repo/scripts/snapshot_ledger.py --src /path/to/world/ledger.sqlite --dst /path/to/app/ledger.sqlite && curl -fsS http://localhost:5000/api/stats > /dev/null
   ```
-  This copies a consistent snapshot and warms the API cache on next hit.
+  - `--src` points at the live world DB; `--dst` is the copy the app reads.
+  - The `curl` hit populates the in-app cache (TTL controlled by `STATS_CACHE_TTL`, default 30 minutes).
 
 ## Endpoints
 - `/` serves the React-free static page from `public/index.html`.
