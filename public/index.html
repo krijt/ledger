@@ -6,53 +6,92 @@
   <title>Minecraft World Stats</title>
   <style>
     :root {
-      --bg: #0b1220;
-      --panel: #111a2d;
-      --accent: #3ecf8e;
-      --text: #e8eefc;
-      --muted: #8ea1c0;
-      --table-header: #19233b;
+      --bg: #0b1726;
+      --panel: #0f1f33;
+      --accent: #4bf091;
+      --accent-2: #7ce5ff;
+      --text: #f0f7ff;
+      --muted: #9bb3d0;
+      --table-header: #183352;
+      --shadow: 0 14px 34px rgba(0,0,0,0.35);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Inter", system-ui, -apple-system, sans-serif;
-      background: radial-gradient(circle at 20% 20%, #13203a, #0b1220 45%),
-                  radial-gradient(circle at 80% 0%, #1a2d4f, transparent 40%),
-                  var(--bg);
+      background:
+        linear-gradient(135deg, rgba(75, 240, 145, 0.08), rgba(124, 229, 255, 0.05)),
+        radial-gradient(circle at 20% 20%, rgba(88, 173, 255, 0.18), transparent 40%),
+        radial-gradient(circle at 80% 0%, rgba(88, 255, 158, 0.15), transparent 38%),
+        var(--bg);
       color: var(--text);
       min-height: 100vh;
       padding: 24px;
     }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px, 40px 40px;
+      opacity: 0.8;
+    }
     header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-    h1 { margin: 0; letter-spacing: 0.5px; }
+    h1 { margin: 0; letter-spacing: 0.5px; text-shadow: 0 6px 18px rgba(0,0,0,0.35); }
     .pill {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(62, 207, 142, 0.12);
+      background: linear-gradient(135deg, rgba(75, 240, 145, 0.16), rgba(124, 229, 255, 0.14));
       color: var(--accent);
-      font-weight: 600;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 0.96rem;
+      border: 1px solid rgba(75, 240, 145, 0.3);
+      box-shadow: var(--shadow);
     }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
     .card {
       background: var(--panel);
-      border: 1px solid rgba(255,255,255,0.04);
+      border: 1px solid rgba(124, 229, 255, 0.12);
       border-radius: 14px;
       padding: 16px;
-      box-shadow: 0 14px 34px rgba(0,0,0,0.25);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 0%, rgba(75, 240, 145, 0.08), transparent 40%);
+      pointer-events: none;
     }
     .card h2, .card h3 { margin: 0 0 10px 0; font-size: 1rem; letter-spacing: 0.2px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
     th, td { padding: 8px 10px; text-align: left; }
-    th { background: var(--table-header); color: var(--muted); font-weight: 600; }
-    tr:nth-child(every) { background: rgba(255,255,255,0.02); }
-    tbody tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
-    tbody tr:nth-child(even) { background: rgba(255,255,255,0.04); }
+    th { background: var(--table-header); color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+    tbody tr:nth-child(odd) { background: rgba(255,255,255,0.03); }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.06); }
     .muted { color: var(--muted); font-size: 0.9rem; }
+    .player-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .player-card { display: flex; gap: 10px; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(124, 229, 255, 0.08); }
+    .player-card img { width: 48px; height: 48px; border-radius: 8px; image-rendering: pixelated; background: #1b2d44; border: 1px solid rgba(255,255,255,0.15); }
+    .player-meta { display: grid; gap: 2px; }
+    .player-name { font-weight: 700; }
+    .player-stats { color: var(--muted); font-size: 0.88rem; }
+    .hero {
+      padding: 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(75, 240, 145, 0.18), rgba(124, 229, 255, 0.14));
+      border: 1px solid rgba(124, 229, 255, 0.2);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
     @media (max-width: 640px) { body { padding: 16px; } table { font-size: 0.85rem; } }
   </style>
 </head>
@@ -60,10 +99,19 @@
   <header>
     <div>
       <h1>Minecraft World Stats</h1>
-      <div class="muted">Live totals from ledger.sqlite</div>
+      <div class="muted">Live totals from ledger.sqlite with a Minecraft vibe</div>
     </div>
     <div class="pill"><span>🧮</span><span id="total-actions">…</span></div>
   </header>
+
+  <section class="hero">
+    Build, mine, and battle stats pulled straight from your ledger. All worlds combined for a clean overview.
+  </section>
+
+  <section class="card">
+    <h2>Top Players</h2>
+    <div id="players" class="player-grid"></div>
+  </section>
 
   <section class="grid" id="tables"></section>
 
@@ -72,6 +120,11 @@
       const res = await fetch('/api/stats', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to load stats');
       return res.json();
+    }
+
+    function playerAvatarUrl(name) {
+      const safe = encodeURIComponent(name);
+      return `https://mc-heads.net/avatar/${safe}/48`;
     }
 
     function makeCard(title, content) {
@@ -110,15 +163,42 @@
       return table;
     }
 
+    function renderPlayers(players) {
+      const container = document.getElementById('players');
+      container.innerHTML = '';
+      players.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'player-card';
+        const img = document.createElement('img');
+        img.src = playerAvatarUrl(p.player);
+        img.alt = `${p.player} head`;
+        img.loading = 'lazy';
+        img.onerror = () => { img.style.display = 'none'; };
+        const meta = document.createElement('div');
+        meta.className = 'player-meta';
+        const name = document.createElement('div');
+        name.className = 'player-name';
+        name.textContent = p.player;
+        const stats = document.createElement('div');
+        stats.className = 'player-stats';
+        stats.textContent = `${Number(p.actions).toLocaleString()} actions`;
+        meta.appendChild(name);
+        meta.appendChild(stats);
+        card.appendChild(img);
+        card.appendChild(meta);
+        container.appendChild(card);
+      });
+    }
+
     function render(stats) {
       document.getElementById('total-actions').textContent = `${stats.total_actions.toLocaleString()} actions`;
+      renderPlayers(stats.top_players);
 
       const tables = document.getElementById('tables');
       tables.innerHTML = '';
 
       const defs = [
         ["Action Mix", ["Action", "Count"], stats.action_mix.map(r => [r.action, r.actions])],
-        ["Top Players", ["Player", "Actions"], stats.top_players.map(r => [r.player, r.actions])],
         ["Builders vs Breakers", ["Player", "Blocks Placed", "Blocks Broken"], stats.builders_vs_breakers.map(r => [r.player, r.blocks_placed, r.blocks_broken])],
         ["Favorite Blocks Placed", ["Block", "Placed"], stats.favorite_blocks_placed.map(r => [r.block, r.placed])],
         ["Deadliest Players", ["Player", "Kills"], stats.deadliest_players.map(r => [r.player, r.kills])],
