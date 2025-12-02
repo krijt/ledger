@@ -174,7 +174,7 @@
     function mobIconUrl(identifier) {
       if (!identifier) return null;
       const name = identifier.replace('minecraft:', '');
-      return `${ASSET_BASE}/entity/${name}/${name}.png`;
+      return `https://mc-heads.net/head/${encodeURIComponent(name)}?size=32&helm`;
     }
 
     function iconCell(text, icon) {
