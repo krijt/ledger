@@ -63,6 +63,7 @@
       box-shadow: var(--shadow);
       position: relative;
       overflow: hidden;
+      margin-bottom: 12px;
     }
     .card::after {
       content: "";
@@ -120,13 +121,14 @@
       <thead>
         <tr>
           <th>Time</th>
-          <th>Target</th>
+          <th>Player</th>
           <th>Cause/Killer</th>
           <th>World @ (x,y,z)</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
+    <div id="death-snark" class="muted" style="margin-top:8px;"></div>
   </section>
 
   <section class="card">
@@ -288,10 +290,23 @@
       renderCharts(stats);
     }
 
+    const SNARK = [
+      "Pro tip: maybe pack a totem next time.",
+      "Ouch. Beds are for sleeping, not exploding.",
+      "Gravity remains undefeated.",
+      "That respawn screen is getting a workout.",
+      "Maybe dig straight, not straight down.",
+      "Armor check? Probably needed it.",
+      "Next time bring a bucket of water.",
+      "That went about as well as a creeper hug."
+    ];
+
     function renderDeaths(rows) {
       const empty = document.getElementById('death-empty');
       const tbody = document.querySelector('#death-table tbody');
+      const snark = document.getElementById('death-snark');
       tbody.innerHTML = '';
+      snark.textContent = '';
       if (!rows || rows.length === 0) {
         empty.style.display = 'block';
         return;
@@ -302,25 +317,7 @@
         const time = document.createElement('td');
         time.textContent = r.time;
         const target = document.createElement('td');
-        const targetWrap = document.createElement('div');
-        targetWrap.style.display = 'inline-flex';
-        targetWrap.style.alignItems = 'center';
-        targetWrap.style.gap = '6px';
-        const tgtIcon = mobIconUrl(r.target) || blockIconUrl(r.target);
-        if (tgtIcon) {
-          const img = document.createElement('img');
-          img.src = tgtIcon;
-          img.width = 20;
-          img.height = 20;
-          img.loading = 'lazy';
-          img.style.imageRendering = 'pixelated';
-          img.onerror = () => { img.style.display = 'none'; };
-          targetWrap.appendChild(img);
-        }
-        const targetText = document.createElement('span');
-        targetText.textContent = r.target;
-        targetWrap.appendChild(targetText);
-        target.appendChild(targetWrap);
+        target.textContent = r.victim || 'Unknown';
 
         const cause = document.createElement('td');
         cause.textContent = r.killer ? `${r.cause || 'player'} (${r.killer})` : (r.cause || 'unknown');
@@ -334,6 +331,9 @@
         tr.appendChild(loc);
         tbody.appendChild(tr);
       });
+
+      // Add a random PG-12 jab
+      snark.textContent = SNARK[Math.floor(Math.random() * SNARK.length)];
     }
 
     let playerChart;

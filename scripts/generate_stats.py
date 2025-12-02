@@ -233,15 +233,15 @@ def load_stats(conn: sqlite3.Connection, limit: int) -> dict[str, Any]:
                 a.y,
                 a.z,
                 s.name AS cause,
-                p.player_name AS killer,
-                o.identifier AS target
+                killer.player_name AS killer,
+                victim.player_name AS victim
             FROM actions a
             JOIN worlds w ON w.id = a.world_id
             JOIN sources s ON s.id = a.source
-            JOIN ObjectIdentifiers o ON o.id = a.object_id
-            LEFT JOIN players p ON p.id = a.player_id
+            JOIN players victim ON victim.id = a.player_id
+            LEFT JOIN players killer ON killer.id = a.source -- if source maps to player id, adjust join accordingly
             WHERE a.action_id = 8
-              AND (o.identifier NOT LIKE 'minecraft:player' AND p.player_name IS NOT NULL)
+              AND victim.player_name IS NOT NULL
             ORDER BY a.time DESC
             LIMIT 5
             """,
