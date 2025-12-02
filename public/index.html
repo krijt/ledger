@@ -60,12 +60,10 @@
   <header>
     <div>
       <h1>Minecraft World Stats</h1>
-      <div class="muted">Live snapshot from ledger.sqlite</div>
+      <div class="muted">Live totals from ledger.sqlite</div>
     </div>
     <div class="pill"><span>🧮</span><span id="total-actions">…</span></div>
   </header>
-
-  <section class="grid" id="world-mix"></section>
 
   <section class="grid" id="tables"></section>
 
@@ -114,20 +112,6 @@
 
     function render(stats) {
       document.getElementById('total-actions').textContent = `${stats.total_actions.toLocaleString()} actions`;
-
-      const worldMix = document.getElementById('world-mix');
-      worldMix.innerHTML = '';
-      stats.world_counts.forEach(w => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        const h = document.createElement('h3');
-        h.textContent = w.world;
-        const p = document.createElement('div');
-        p.textContent = `${Number(w.actions).toLocaleString()} actions`;
-        div.appendChild(h);
-        div.appendChild(p);
-        worldMix.appendChild(div);
-      });
 
       const tables = document.getElementById('tables');
       tables.innerHTML = '';
