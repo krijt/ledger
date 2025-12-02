@@ -31,6 +31,10 @@ Visit `http://localhost:5000` for the UI, `/api/stats` for JSON. Change port wit
 - `./scripts/refresh_stats.sh`  
   Writes `public/stats.json` and `public/stats.md` (uses `DB_PATH`/`OUT_DIR` envs).
 
+## Testing
+- Install dev deps: `python -m pip install -r requirements-dev.txt`
+- Run tests: `python -m pytest`
+
 ## Project Layout
 - `app.py` – Flask app + API.
 - `public/` – static site assets (HTML/JS) consuming `/api/stats`.
