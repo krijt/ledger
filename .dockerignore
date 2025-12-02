@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+env/
+build/
+dist/
+.git/
+.idea/
+.vscode/
+*.log
+public/stats.json
+public/stats.md
+ledger.sqlite

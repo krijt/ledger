@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft World Stats</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2d;
+      --accent: #3ecf8e;
+      --text: #e8eefc;
+      --muted: #8ea1c0;
+      --table-header: #19233b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 20% 20%, #13203a, #0b1220 45%),
+                  radial-gradient(circle at 80% 0%, #1a2d4f, transparent 40%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+    h1 { margin: 0; letter-spacing: 0.5px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(62, 207, 142, 0.12);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.25);
+    }
+    .card h2, .card h3 { margin: 0 0 10px 0; font-size: 1rem; letter-spacing: 0.2px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td { padding: 8px 10px; text-align: left; }
+    th { background: var(--table-header); color: var(--muted); font-weight: 600; }
+    tr:nth-child(every) { background: rgba(255,255,255,0.02); }
+    tbody tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.04); }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 640px) { body { padding: 16px; } table { font-size: 0.85rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Minecraft World Stats</h1>
+      <div class="muted">Live snapshot from ledger.sqlite</div>
+    </div>
+    <div class="pill"><span>🧮</span><span id="total-actions">…</span></div>
+  </header>
+
+  <section class="grid" id="world-mix"></section>
+
+  <section class="grid" id="tables"></section>
+
+  <script>
+    async function fetchStats() {
+      const res = await fetch('/api/stats', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to load stats');
+      return res.json();
+    }
+
+    function makeCard(title, content) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const h = document.createElement('h2');
+      h.textContent = title;
+      card.appendChild(h);
+      card.appendChild(content);
+      return card;
+    }
+
+    function makeTable(headers, rows) {
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      headers.forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      return table;
+    }
+
+    function render(stats) {
+      document.getElementById('total-actions').textContent = `${stats.total_actions.toLocaleString()} actions`;
+
+      const worldMix = document.getElementById('world-mix');
+      worldMix.innerHTML = '';
+      stats.world_counts.forEach(w => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        const h = document.createElement('h3');
+        h.textContent = w.world;
+        const p = document.createElement('div');
+        p.textContent = `${Number(w.actions).toLocaleString()} actions`;
+        div.appendChild(h);
+        div.appendChild(p);
+        worldMix.appendChild(div);
+      });
+
+      const tables = document.getElementById('tables');
+      tables.innerHTML = '';
+
+      const defs = [
+        ["Action Mix", ["Action", "Count"], stats.action_mix.map(r => [r.action, r.actions])],
+        ["Top Players", ["Player", "Actions"], stats.top_players.map(r => [r.player, r.actions])],
+        ["Builders vs Breakers", ["Player", "Blocks Placed", "Blocks Broken"], stats.builders_vs_breakers.map(r => [r.player, r.blocks_placed, r.blocks_broken])],
+        ["Favorite Blocks Placed", ["Block", "Placed"], stats.favorite_blocks_placed.map(r => [r.block, r.placed])],
+        ["Deadliest Players", ["Player", "Kills"], stats.deadliest_players.map(r => [r.player, r.kills])],
+        ["Top Environmental Causes", ["Cause", "Events"], stats.environmental_causes.map(r => [r.cause, r.events])],
+        ["Hottest Chunks", ["World", "Chunk X", "Chunk Z", "Actions"], stats.hotspots.map(r => [r.world, r.chunk_x, r.chunk_z, r.actions])],
+        ["Hourly Activity", ["Hour", "Actions"], stats.hourly_activity.map(r => [r.hour, r.actions])]
+      ];
+
+      defs.forEach(([title, headers, rows]) => {
+        const card = makeCard(title, makeTable(headers, rows));
+        tables.appendChild(card);
+      });
+    }
+
+    fetchStats().then(render).catch(err => {
+      document.body.innerHTML = '<div style="color:white">Failed to load stats: ' + err + '</div>';
+      console.error(err);
+    });
+  </script>
+</body>
+</html>

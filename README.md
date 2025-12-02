@@ -1,0 +1,38 @@
+# Minecraft Ledger Stats
+
+Fun stats dashboard for a Minecraft world backed by a Ledger SQLite database. Provides a web UI (Flask) and JSON API, plus CLI generators for Markdown/JSON snapshots.
+
+## Quick Start (Local)
+```bash
+python -m venv .venv && source .venv/bin/activate
+python -m pip install -r requirements.txt
+LEDGER_DB=ledger.sqlite FLASK_APP=app.py FLASK_ENV=development flask run  # http://localhost:5000
+```
+- Env vars: `LEDGER_DB` (path to ledger file), `STATS_LIMIT` (leaderboard rows, default 10), `PORT` (default 5000).
+
+## Docker
+```bash
+docker build -t mc-ledger-stats .
+docker run --rm -p 5000:5000 \
+  -v $(pwd)/ledger.sqlite:/app/ledger.sqlite:ro \
+  -e LEDGER_DB=/app/ledger.sqlite \
+  -e STATS_LIMIT=10 \
+  mc-ledger-stats:latest
+```
+Visit `http://localhost:5000` for the UI, `/api/stats` for JSON. Change port with `-e PORT=8080 -p 8080:8080`.
+
+## Endpoints
+- `/` serves the React-free static page from `public/index.html`.
+- `/api/stats` returns live JSON computed from the SQLite DB.
+
+## Scripts
+- `python scripts/generate_stats.py --db ledger.sqlite --limit 10 --format markdown|json`  
+  Generate stats to stdout.
+- `./scripts/refresh_stats.sh`  
+  Writes `public/stats.json` and `public/stats.md` (uses `DB_PATH`/`OUT_DIR` envs).
+
+## Project Layout
+- `app.py` – Flask app + API.
+- `public/` – static site assets (HTML/JS) consuming `/api/stats`.
+- `scripts/` – stats generators and refresh helper.
+- `Dockerfile`, `.dockerignore`, `requirements.txt` – container/runtime setup.

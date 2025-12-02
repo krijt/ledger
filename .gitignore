@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+env/
+build/
+dist/
+
+# Local data/artifacts
+ledger.sqlite
+public/stats.json
+public/stats.md
+
+# Internal git repo copy
+master/
