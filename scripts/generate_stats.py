@@ -121,6 +121,23 @@ def load_stats(conn: sqlite3.Connection, limit: int) -> dict[str, Any]:
         )
     ]
 
+    stats["mob_kills"] = [
+        dict(row)
+        for row in _rows(
+            conn,
+            """
+            SELECT o.identifier AS mob, COUNT(*) AS kills
+            FROM actions a
+            JOIN ObjectIdentifiers o ON o.id = a.object_id
+            WHERE a.action_id = 8
+            GROUP BY o.identifier
+            ORDER BY kills DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+    ]
+
     stats["environmental_causes"] = [
         dict(row)
         for row in _rows(
@@ -215,6 +232,10 @@ def format_markdown(stats: dict[str, Any]) -> str:
 
     lines.append("## Deadliest Players")
     lines.append(table(["Player", "Kills"], ((r["player"], r["kills"]) for r in stats["deadliest_players"])))
+    lines.append("")
+
+    lines.append("## Most Killed Mobs")
+    lines.append(table(["Mob", "Kills"], ((r["mob"], r["kills"]) for r in stats["mob_kills"])))
     lines.append("")
 
     lines.append("## Top Environmental Causes (no player)")
