@@ -159,6 +159,8 @@
     }
 
     const ASSET_BASE = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures';
+    const SIMPLEXITY_BASE = 'https://raw.githubusercontent.com/Simplexity-Development/Entity-Icons/main/assets/png_files';
+    const LOCAL_MOB_ICONS = new Set(['enderman','zombie','skeleton','creeper','iron_golem','bat','spider']);
 
     function playerAvatarUrl(name) {
       const safe = encodeURIComponent(name);
@@ -174,7 +176,10 @@
     function mobIconUrl(identifier) {
       if (!identifier) return null;
       const name = identifier.replace('minecraft:', '');
-      return `https://mc-heads.net/head/${encodeURIComponent(name)}?size=32&helm`;
+      if (LOCAL_MOB_ICONS.has(name)) {
+        return `/icons/mobs/${name}.png`;
+      }
+      return `${SIMPLEXITY_BASE}/${encodeURIComponent(name)}/16x16/${encodeURIComponent(name)}.png`;
     }
 
     function iconCell(text, icon) {
