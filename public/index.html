@@ -256,12 +256,10 @@
       tables.innerHTML = '';
 
       const defs = [
-        ["Action Mix", ["Action", "Count"], stats.action_mix.map(r => [r.action, r.actions])],
         ["Builders vs Breakers", ["Player", "Blocks Placed", "Blocks Broken"], stats.builders_vs_breakers.map(r => [iconCell(r.player, playerAvatarUrl(r.player)), r.blocks_placed, r.blocks_broken])],
         ["Favorite Blocks Placed", ["Block", "Placed"], stats.favorite_blocks_placed.map(r => [iconCell(r.block, blockIconUrl(r.block)), r.placed])],
         ["Deadliest Players", ["Player", "Kills"], stats.deadliest_players.map(r => [iconCell(r.player, playerAvatarUrl(r.player)), r.kills])],
         ["Most Killed Mobs", ["Mob", "Kills"], stats.mob_kills.map(r => [iconCell(r.mob, mobIconUrl(r.mob)), r.kills])],
-        ["Top Environmental Causes", ["Cause", "Events"], stats.environmental_causes.map(r => [r.cause, r.events])],
         ["Hottest Chunks", ["World", "Chunk X", "Chunk Z", "Actions"], stats.hotspots.map(r => [r.world, r.chunk_x, r.chunk_z, r.actions])],
         ["Hourly Activity", ["Hour", "Actions"], stats.hourly_activity.map(r => [r.hour, r.actions])]
       ];
