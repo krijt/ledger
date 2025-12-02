@@ -35,6 +35,11 @@ Visit `http://localhost:5000` for the UI, `/api/stats` for JSON. Change port wit
 - Install dev deps: `python -m pip install -r requirements-dev.txt`
 - Run tests: `python -m pytest`
 
+## Tooling
+- `make install` – create venv + install dev deps
+- `make test` – run pytest suite
+- Pre-commit hooks: install with `pre-commit install` (formatters: black, isort, prettier; linter: ruff)
+
 ## Project Layout
 - `app.py` – Flask app + API.
 - `public/` – static site assets (HTML/JS) consuming `/api/stats`.
