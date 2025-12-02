@@ -119,7 +119,20 @@
 
   <section class="grid" id="tables"></section>
 
+  <section class="grid" id="charts">
+    <div class="card">
+      <h2>Player Activity by Hour</h2>
+      <canvas id="player-activity" height="200"></canvas>
+    </div>
+    <div class="card">
+      <h2>Blocks Placed vs Broken</h2>
+      <canvas id="block-activity" height="200"></canvas>
+    </div>
+  </section>
+
   <script>
+    const HOUR_LABELS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+
     async function fetchStats() {
       const res = await fetch('/api/stats', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to load stats');
@@ -256,6 +269,86 @@
         const card = makeCard(title, makeTable(headers, rows));
         tables.appendChild(card);
       });
+
+      renderCharts(stats);
+    }
+
+    function renderCharts(stats) {
+      // Player activity stacked bar
+      const ctxPlayer = document.getElementById('player-activity').getContext('2d');
+      const byPlayer = {};
+      stats.player_hourly_activity.forEach(row => {
+        if (!byPlayer[row.player]) byPlayer[row.player] = Array(24).fill(0);
+        const idx = parseInt(row.hour, 10);
+        byPlayer[row.player][idx] = row.actions;
+      });
+      const playerDatasets = Object.entries(byPlayer).map(([player, data]) => ({
+        label: player,
+        data,
+        backgroundColor: `hsla(${Math.random() * 360}, 70%, 60%, 0.7)`,
+        borderWidth: 0
+      }));
+
+      new Chart(ctxPlayer, {
+        type: 'bar',
+        data: {
+          labels: HOUR_LABELS,
+          datasets: playerDatasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          },
+          scales: {
+            x: { stacked: true },
+            y: { stacked: true, beginAtZero: true }
+          }
+        }
+      });
+
+      // Blocks placed vs broken line chart
+      const ctxBlocks = document.getElementById('block-activity').getContext('2d');
+      const placed = Array(24).fill(0);
+      const broken = Array(24).fill(0);
+      stats.block_hourly.forEach(row => {
+        const idx = parseInt(row.hour, 10);
+        placed[idx] = row.blocks_placed;
+        broken[idx] = row.blocks_broken;
+      });
+      new Chart(ctxBlocks, {
+        type: 'line',
+        data: {
+          labels: HOUR_LABELS,
+          datasets: [
+            {
+              label: 'Blocks Placed',
+              data: placed,
+              borderColor: '#4caf50',
+              backgroundColor: 'rgba(76, 175, 80, 0.25)',
+              tension: 0.25,
+              fill: true
+            },
+            {
+              label: 'Blocks Broken',
+              data: broken,
+              borderColor: '#e53935',
+              backgroundColor: 'rgba(229, 57, 53, 0.2)',
+              tension: 0.25,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
     }
 
     fetchStats().then(render).catch(err => {
@@ -263,5 +356,6 @@
       console.error(err);
     });
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
