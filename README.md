@@ -45,6 +45,15 @@ Visit `http://localhost:5000` for the UI, `/api/stats` for JSON. Change port wit
   - `--src` points at the live world DB; `--dst` is the copy the app reads.
   - The `curl` hit populates the in-app cache (TTL controlled by `STATS_CACHE_TTL`, default 30 minutes).
 
+## Docker Compose
+Bring up the stack with your ledger mounted:
+```bash
+LEDGER_DB_PATH=/absolute/path/to/ledger.sqlite \
+PORT=5000 \
+docker-compose up -d
+```
+Environment defaults: `STATS_LIMIT=10`, `STATS_CACHE_TTL=1800`, `PORT=5000`. The compose file builds from `Dockerfile.deploy` if the image isn’t present.
+
 ## Endpoints
 - `/` serves the React-free static page from `public/index.html`.
 - `/api/stats` returns cached JSON computed from the SQLite DB. Cache TTL defaults to 30 minutes; override with `STATS_CACHE_TTL` (seconds).
