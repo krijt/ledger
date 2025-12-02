@@ -241,6 +241,7 @@ def load_stats(conn: sqlite3.Connection, limit: int) -> dict[str, Any]:
             JOIN ObjectIdentifiers o ON o.id = a.object_id
             LEFT JOIN players p ON p.id = a.player_id
             WHERE a.action_id = 8
+              AND (o.identifier NOT LIKE 'minecraft:player' AND p.player_name IS NOT NULL)
             ORDER BY a.time DESC
             LIMIT 5
             """,

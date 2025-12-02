@@ -278,7 +278,6 @@
         ["Deadliest Players", ["Player", "Kills"], stats.deadliest_players.map(r => [iconCell(r.player, playerAvatarUrl(r.player)), r.kills])],
         ["Most Killed Mobs", ["Mob", "Kills"], stats.mob_kills.map(r => [iconCell(r.mob, mobIconUrl(r.mob)), r.kills])],
         ["Hottest Chunks", ["World", "Chunk X", "Chunk Z", "Actions"], stats.hotspots.map(r => [r.world, r.chunk_x, r.chunk_z, r.actions])],
-        ["Hourly Activity", ["Hour", "Actions"], stats.hourly_activity.map(r => [r.hour, r.actions])]
       ];
 
       defs.forEach(([title, headers, rows]) => {
