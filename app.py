@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +28,9 @@ import sqlite3  # noqa: E402
 
 app = Flask(__name__, static_folder="public", static_url_path="")
 
+_CACHE: dict[str, Any] = {}
+_CACHE_TTL_SECONDS = int(os.getenv("STATS_CACHE_TTL", "1800"))  # default 30 minutes
+
 
 def get_db_path() -> Path:
     return Path(os.getenv("LEDGER_DB", "ledger.sqlite"))
@@ -40,6 +44,12 @@ def get_limit() -> int:
 
 
 def fetch_stats() -> dict[str, Any]:
+    now = time.time()
+    cached = _CACHE.get("data")
+    cached_at = _CACHE.get("ts", 0)
+    if cached and (now - cached_at) < _CACHE_TTL_SECONDS:
+        return cached
+
     db_path = get_db_path()
     if not db_path.exists():
         raise FileNotFoundError(f"Database not found: {db_path}")
@@ -48,7 +58,10 @@ def fetch_stats() -> dict[str, Any]:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA temp_store = MEMORY;")
     try:
-        return load_stats(conn, get_limit())
+        stats = load_stats(conn, get_limit())
+        _CACHE["data"] = stats
+        _CACHE["ts"] = now
+        return stats
     finally:
         conn.close()
 
