@@ -54,6 +54,13 @@ docker-compose up -d
 ```
 Environment defaults: `STATS_LIMIT=10`, `STATS_CACHE_TTL=1800`, `PORT=5000`. For Swarm (`docker stack deploy`), pre-build/push `mc-ledger-stats:latest` and ensure the ledger path is available on the node (or use a shared volume).
 
+Swarm example (single node, prebuilt image):
+```bash
+LEDGER_DB_PATH=/absolute/path/to/ledger.sqlite \
+PORT=5000 \
+docker stack deploy -c docker-compose.yml siemcraft
+```
+
 ## Endpoints
 - `/` serves the React-free static page from `public/index.html`.
 - `/api/stats` returns cached JSON computed from the SQLite DB. Cache TTL defaults to 30 minutes; override with `STATS_CACHE_TTL` (seconds).
