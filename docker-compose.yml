@@ -3,10 +3,6 @@ version: "3.8"
 services:
   mc-ledger-stats:
     image: mc-ledger-stats:latest
-    build:
-      context: .
-      dockerfile: Dockerfile.deploy
-    container_name: mc-ledger-stats
     ports:
       - "${PORT:-5000}:${PORT:-5000}"
     environment:
@@ -16,4 +12,9 @@ services:
       - PORT=${PORT:-5000}
     volumes:
       - "${LEDGER_DB_PATH:-./ledger.sqlite}:/app/ledger.sqlite:ro"
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 30s
