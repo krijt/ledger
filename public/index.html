@@ -126,9 +126,27 @@
       return res.json();
     }
 
+    const ASSET_BASE = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures';
+
     function playerAvatarUrl(name) {
       const safe = encodeURIComponent(name);
       return `https://mc-heads.net/avatar/${safe}/48`;
+    }
+
+    function blockIconUrl(identifier) {
+      if (!identifier) return null;
+      const name = identifier.replace('minecraft:', '');
+      return `${ASSET_BASE}/block/${name}.png`;
+    }
+
+    function mobIconUrl(identifier) {
+      if (!identifier) return null;
+      const name = identifier.replace('minecraft:', '');
+      return `${ASSET_BASE}/entity/${name}/${name}.png`;
+    }
+
+    function iconCell(text, icon) {
+      return { text, icon };
     }
 
     function makeCard(title, content) {
@@ -158,7 +176,29 @@
         const tr = document.createElement('tr');
         row.forEach(cell => {
           const td = document.createElement('td');
-          td.textContent = cell;
+          if (cell && typeof cell === 'object' && 'text' in cell) {
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'inline-flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.gap = '8px';
+            if (cell.icon) {
+              const img = document.createElement('img');
+              img.src = cell.icon;
+              img.alt = '';
+              img.loading = 'lazy';
+              img.width = 20;
+              img.height = 20;
+              img.style.imageRendering = 'pixelated';
+              img.onerror = () => { img.style.display = 'none'; };
+              wrapper.appendChild(img);
+            }
+            const span = document.createElement('span');
+            span.textContent = cell.text;
+            wrapper.appendChild(span);
+            td.appendChild(wrapper);
+          } else {
+            td.textContent = cell;
+          }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -203,10 +243,10 @@
 
       const defs = [
         ["Action Mix", ["Action", "Count"], stats.action_mix.map(r => [r.action, r.actions])],
-        ["Builders vs Breakers", ["Player", "Blocks Placed", "Blocks Broken"], stats.builders_vs_breakers.map(r => [r.player, r.blocks_placed, r.blocks_broken])],
-        ["Favorite Blocks Placed", ["Block", "Placed"], stats.favorite_blocks_placed.map(r => [r.block, r.placed])],
-        ["Deadliest Players", ["Player", "Kills"], stats.deadliest_players.map(r => [r.player, r.kills])],
-        ["Most Killed Mobs", ["Mob", "Kills"], stats.mob_kills.map(r => [r.mob, r.kills])],
+        ["Builders vs Breakers", ["Player", "Blocks Placed", "Blocks Broken"], stats.builders_vs_breakers.map(r => [iconCell(r.player, playerAvatarUrl(r.player)), r.blocks_placed, r.blocks_broken])],
+        ["Favorite Blocks Placed", ["Block", "Placed"], stats.favorite_blocks_placed.map(r => [iconCell(r.block, blockIconUrl(r.block)), r.placed])],
+        ["Deadliest Players", ["Player", "Kills"], stats.deadliest_players.map(r => [iconCell(r.player, playerAvatarUrl(r.player)), r.kills])],
+        ["Most Killed Mobs", ["Mob", "Kills"], stats.mob_kills.map(r => [iconCell(r.mob, mobIconUrl(r.mob)), r.kills])],
         ["Top Environmental Causes", ["Cause", "Events"], stats.environmental_causes.map(r => [r.cause, r.events])],
         ["Hottest Chunks", ["World", "Chunk X", "Chunk Z", "Actions"], stats.hotspots.map(r => [r.world, r.chunk_x, r.chunk_z, r.actions])],
         ["Hourly Activity", ["Hour", "Actions"], stats.hourly_activity.map(r => [r.hour, r.actions])]
