@@ -273,6 +273,9 @@
       renderCharts(stats);
     }
 
+    let playerChart;
+    let blockChart;
+
     function renderCharts(stats) {
       // Player activity stacked bar
       const ctxPlayer = document.getElementById('player-activity').getContext('2d');
@@ -289,7 +292,8 @@
         borderWidth: 0
       }));
 
-      new Chart(ctxPlayer, {
+      if (playerChart) playerChart.destroy();
+      playerChart = new Chart(ctxPlayer, {
         type: 'bar',
         data: {
           labels: HOUR_LABELS,
@@ -317,7 +321,8 @@
         placed[idx] = row.blocks_placed;
         broken[idx] = row.blocks_broken;
       });
-      new Chart(ctxBlocks, {
+      if (blockChart) blockChart.destroy();
+      blockChart = new Chart(ctxBlocks, {
         type: 'line',
         data: {
           labels: HOUR_LABELS,
