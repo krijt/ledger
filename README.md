@@ -21,6 +21,18 @@ docker run --rm -p 5000:5000 \
 ```
 Visit `http://localhost:5000` for the UI, `/api/stats` for JSON. Change port with `-e PORT=8080 -p 8080:8080`.
 
+### Deployment image & auto-redeploy script
+- Production Dockerfile: `Dockerfile.deploy` (build the same way as the main Dockerfile).
+- Auto-pull/redeploy helper:
+  ```bash
+  IMAGE=mc-ledger-stats:latest \
+  CONTAINER_NAME=mc-ledger-stats \
+  LEDGER_DB=/path/to/ledger.sqlite \
+  PORT=5000 \
+  ./scripts/watch_and_deploy.sh
+  ```
+  The script pulls the image, compares digests, and restarts the container only when the image changes.
+
 ## Endpoints
 - `/` serves the React-free static page from `public/index.html`.
 - `/api/stats` returns live JSON computed from the SQLite DB.
