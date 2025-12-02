@@ -96,6 +96,7 @@
       font-weight: 700;
     }
     .hero strong { color: #0b120c; }
+    .chart-canvas { width: 100%; height: min(400px, 50vh); max-height: 50vh; }
     @media (max-width: 640px) { body { padding: 16px; } table { font-size: 0.85rem; } }
   </style>
 </head>
@@ -122,11 +123,11 @@
   <section class="grid" id="charts">
     <div class="card">
       <h2>Player Activity by Hour</h2>
-      <canvas id="player-activity" height="200"></canvas>
+      <canvas id="player-activity" class="chart-canvas"></canvas>
     </div>
     <div class="card">
       <h2>Blocks Placed vs Broken</h2>
-      <canvas id="block-activity" height="200"></canvas>
+      <canvas id="block-activity" class="chart-canvas"></canvas>
     </div>
   </section>
 
