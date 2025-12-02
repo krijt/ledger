@@ -221,6 +221,32 @@ def load_stats(conn: sqlite3.Connection, limit: int) -> dict[str, Any]:
         )
     ]
 
+    stats["recent_deaths"] = [
+        dict(row)
+        for row in _rows(
+            conn,
+            """
+            SELECT
+                a.time,
+                w.identifier AS world,
+                a.x,
+                a.y,
+                a.z,
+                s.name AS cause,
+                p.player_name AS killer,
+                o.identifier AS target
+            FROM actions a
+            JOIN worlds w ON w.id = a.world_id
+            JOIN sources s ON s.id = a.source
+            JOIN ObjectIdentifiers o ON o.id = a.object_id
+            LEFT JOIN players p ON p.id = a.player_id
+            WHERE a.action_id = 8
+            ORDER BY a.time DESC
+            LIMIT 5
+            """,
+        )
+    ]
+
     return stats
 
 

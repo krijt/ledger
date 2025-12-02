@@ -114,6 +114,22 @@
   </section>
 
   <section class="card">
+    <h2>Recent Death Log</h2>
+    <div class="muted" id="death-empty" style="display:none;">No deaths recorded.</div>
+    <table id="death-table" style="width:100%; border-collapse:collapse; margin-top:8px;">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Target</th>
+          <th>Cause/Killer</th>
+          <th>World @ (x,y,z)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card">
     <h2>Top Players</h2>
     <div id="players" class="player-grid"></div>
   </section>
@@ -251,6 +267,7 @@
     function render(stats) {
       document.getElementById('total-actions').textContent = `${stats.total_actions.toLocaleString()} actions`;
       renderPlayers(stats.top_players);
+      renderDeaths(stats.recent_deaths);
 
       const tables = document.getElementById('tables');
       tables.innerHTML = '';
@@ -270,6 +287,54 @@
       });
 
       renderCharts(stats);
+    }
+
+    function renderDeaths(rows) {
+      const empty = document.getElementById('death-empty');
+      const tbody = document.querySelector('#death-table tbody');
+      tbody.innerHTML = '';
+      if (!rows || rows.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        const time = document.createElement('td');
+        time.textContent = r.time;
+        const target = document.createElement('td');
+        const targetWrap = document.createElement('div');
+        targetWrap.style.display = 'inline-flex';
+        targetWrap.style.alignItems = 'center';
+        targetWrap.style.gap = '6px';
+        const tgtIcon = mobIconUrl(r.target) || blockIconUrl(r.target);
+        if (tgtIcon) {
+          const img = document.createElement('img');
+          img.src = tgtIcon;
+          img.width = 20;
+          img.height = 20;
+          img.loading = 'lazy';
+          img.style.imageRendering = 'pixelated';
+          img.onerror = () => { img.style.display = 'none'; };
+          targetWrap.appendChild(img);
+        }
+        const targetText = document.createElement('span');
+        targetText.textContent = r.target;
+        targetWrap.appendChild(targetText);
+        target.appendChild(targetWrap);
+
+        const cause = document.createElement('td');
+        cause.textContent = r.killer ? `${r.cause || 'player'} (${r.killer})` : (r.cause || 'unknown');
+
+        const loc = document.createElement('td');
+        loc.textContent = `${r.world} @ (${r.x}, ${r.y}, ${r.z})`;
+
+        tr.appendChild(time);
+        tr.appendChild(target);
+        tr.appendChild(cause);
+        tr.appendChild(loc);
+        tbody.appendChild(tr);
+      });
     }
 
     let playerChart;
