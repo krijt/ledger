@@ -193,10 +193,11 @@ def load_stats(conn: sqlite3.Connection, limit: int) -> dict[str, Any]:
         for row in _rows(
             conn,
             """
+            WITH bounds AS (SELECT datetime(MAX(time), '-1 day') AS start FROM actions)
             SELECT p.player_name AS player, strftime('%H', time) AS hour, COUNT(*) AS actions
             FROM actions a
             JOIN players p ON p.id = a.player_id
-            WHERE time >= datetime('now', '-1 day')
+            WHERE time >= (SELECT start FROM bounds)
             GROUP BY p.player_name, hour
             ORDER BY p.player_name, hour
             """,
@@ -208,11 +209,12 @@ def load_stats(conn: sqlite3.Connection, limit: int) -> dict[str, Any]:
         for row in _rows(
             conn,
             """
+            WITH bounds AS (SELECT datetime(MAX(time), '-1 day') AS start FROM actions)
             SELECT strftime('%H', time) AS hour,
                    SUM(action_id = 3) AS blocks_placed,
                    SUM(action_id = 1) AS blocks_broken
             FROM actions
-            WHERE time >= datetime('now', '-1 day')
+            WHERE time >= (SELECT start FROM bounds)
             GROUP BY hour
             ORDER BY hour
             """,
