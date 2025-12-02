@@ -161,6 +161,13 @@
     const ASSET_BASE = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures';
     const SIMPLEXITY_BASE = 'https://raw.githubusercontent.com/Simplexity-Development/Entity-Icons/main/assets/png_files';
     const LOCAL_MOB_ICONS = new Set(['enderman','zombie','skeleton','creeper','iron_golem','bat','spider']);
+    const MOB_ICON_ALIASES = {
+      chicken: 'chicken/temperate_chicken',
+      piglin: 'piglin/piglin',
+      piglin_brute: 'piglin/piglin_brute',
+      zombified_piglin: 'piglin/zombified_piglin',
+      glow_squid: 'glow_squid/glow_squid'
+    };
 
     function playerAvatarUrl(name) {
       const safe = encodeURIComponent(name);
@@ -179,7 +186,15 @@
       if (LOCAL_MOB_ICONS.has(name)) {
         return `/icons/mobs/${name}.png`;
       }
-      return `${SIMPLEXITY_BASE}/${encodeURIComponent(name)}/16x16/${encodeURIComponent(name)}.png`;
+      const alias = MOB_ICON_ALIASES[name];
+      let folder = name;
+      let file = name;
+      if (alias) {
+        const parts = alias.split('/');
+        folder = parts[0];
+        file = parts[parts.length - 1];
+      }
+      return `${SIMPLEXITY_BASE}/${encodeURIComponent(folder)}/16x16/${encodeURIComponent(file)}.png`;
     }
 
     function iconCell(text, icon) {
