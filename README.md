@@ -64,6 +64,10 @@ docker stack deploy -c docker-compose.yml siemcraft
 ## Endpoints
 - `/` serves the React-free static page from `public/index.html`.
 - `/api/stats` returns cached JSON computed from the SQLite DB. Cache TTL defaults to 30 minutes; override with `STATS_CACHE_TTL` (seconds).
+- `/api/log-stats` returns cached log-derived stats (playtime, deaths, advancements, villager kills, connection churn). Configure with:
+  - `LOGS_DIR` (directory containing `.log`/`.log.gz`, default `logs/`)
+  - `LOG_STATS_LIMIT` (top-N rows to return, default 5)
+  - `LOG_STATS_CACHE_TTL` (seconds, default 600)
 
 ## Scripts
 - `python scripts/generate_stats.py --db ledger.sqlite --limit 10 --format markdown|json`  

@@ -24,12 +24,15 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from generate_stats import load_stats  # type: ignore  # noqa: E402
+from log_stats import collect_stats  # type: ignore  # noqa: E402
 import sqlite3  # noqa: E402
 
 app = Flask(__name__, static_folder="public", static_url_path="")
 
 _CACHE: dict[str, Any] = {}
 _CACHE_TTL_SECONDS = int(os.getenv("STATS_CACHE_TTL", "1800"))  # default 30 minutes
+_LOG_CACHE: dict[str, Any] = {}
+_LOG_CACHE_TTL_SECONDS = int(os.getenv("LOG_STATS_CACHE_TTL", "600"))  # default 10 minutes
 
 
 def get_db_path() -> Path:
@@ -41,6 +44,17 @@ def get_limit() -> int:
         return int(os.getenv("STATS_LIMIT", "10"))
     except ValueError:
         return 10
+
+
+def get_logs_limit() -> int:
+    try:
+        return int(os.getenv("LOG_STATS_LIMIT", "5"))
+    except ValueError:
+        return 5
+
+
+def get_logs_path() -> Path:
+    return Path(os.getenv("LOGS_DIR", "logs"))
 
 
 def fetch_stats() -> dict[str, Any]:
@@ -66,9 +80,32 @@ def fetch_stats() -> dict[str, Any]:
         conn.close()
 
 
+def fetch_log_stats() -> dict[str, Any]:
+    now = time.time()
+    cached = _LOG_CACHE.get("data")
+    cached_at = _LOG_CACHE.get("ts", 0)
+    if cached and (now - cached_at) < _LOG_CACHE_TTL_SECONDS:
+        return cached
+
+    logs_path = get_logs_path()
+    if not logs_path.exists():
+        raise FileNotFoundError(f"Logs directory not found: {logs_path}")
+
+    stats = collect_stats([logs_path], limit=get_logs_limit())
+    _LOG_CACHE["data"] = stats
+    _LOG_CACHE["ts"] = now
+    return stats
+
+
 @app.route("/api/stats")
 def api_stats():
     stats = fetch_stats()
+    return jsonify(stats)
+
+
+@app.route("/api/log-stats")
+def api_log_stats():
+    stats = fetch_log_stats()
     return jsonify(stats)
 
 
