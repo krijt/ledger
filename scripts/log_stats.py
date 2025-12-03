@@ -82,6 +82,7 @@ def collect_stats(paths: Iterable[Path], limit: int = 5) -> dict[str, object]:
     villager_killers = Counter()
     disconnects = Counter()
     short_sessions = Counter()
+    last_disconnect_ts: dict[str, datetime] = {}
 
     for log_path in _iter_log_files(paths):
         log_date = _parse_date_from_path(log_path)
@@ -97,6 +98,9 @@ def collect_stats(paths: Iterable[Path], limit: int = 5) -> dict[str, object]:
             if leave_match:
                 ts = _combine_timestamp(log_date, leave_match.group("time"))
                 player = leave_match.group("player")
+                if last_disconnect_ts.get(player) == ts:
+                    # Skip duplicate "left the game" immediately after "lost connection"
+                    continue
                 disconnects[player] += 1
                 start = session_start.pop(player, None)
                 if start and ts >= start:
@@ -105,6 +109,7 @@ def collect_stats(paths: Iterable[Path], limit: int = 5) -> dict[str, object]:
                     sessions[player] += 1
                     if duration <= 60:
                         short_sessions[player] += 1
+                last_disconnect_ts[player] = ts
                 continue
 
             adv_match = ADVANCEMENT_RE.search(line)
