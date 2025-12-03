@@ -136,6 +136,12 @@
     <div id="players" class="player-grid"></div>
   </section>
 
+  <section class="card">
+    <h2>Log Highlights</h2>
+    <div id="log-stats-note" class="muted" style="display:none;"></div>
+    <div id="log-tables" class="grid"></div>
+  </section>
+
   <section class="grid" id="tables"></section>
 
   <section class="grid" id="charts">
@@ -151,10 +157,17 @@
 
   <script>
     const HOUR_LABELS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+    const ONE_HOUR = 3600;
 
     async function fetchStats() {
       const res = await fetch('/api/stats', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to load stats');
+      return res.json();
+    }
+
+    async function fetchLogStats() {
+      const res = await fetch('/api/log-stats', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to load log stats');
       return res.json();
     }
 
@@ -310,6 +323,32 @@
       renderCharts(stats);
     }
 
+    function renderLogTables(logStats) {
+      const container = document.getElementById('log-tables');
+      const note = document.getElementById('log-stats-note');
+      container.innerHTML = '';
+      note.style.display = 'none';
+      if (!logStats) {
+        note.textContent = 'Log stats unavailable.';
+        note.style.display = 'block';
+        return;
+      }
+      const hours = (seconds) => (seconds / ONE_HOUR).toFixed(1);
+      const defs = [
+        ["Top Playtime (logs)", ["Player", "Hours", "Sessions"], logStats.top_playtime.map(r => [iconCell(r.player, playerAvatarUrl(r.player)), hours(r.seconds), r.sessions])],
+        ["Advancements (logs)", ["Player", "Advancements"], logStats.top_advancements.map(r => [iconCell(r.name, playerAvatarUrl(r.name)), r.count])],
+        ["Deaths by Player (logs)", ["Player", "Deaths"], logStats.top_player_deaths.map(r => [iconCell(r.player, playerAvatarUrl(r.player)), r.deaths])],
+        ["Death Causes (logs)", ["Cause", "Events"], logStats.top_death_causes.map(r => [r.cause, r.events])],
+        ["Villager Killers (logs)", ["Name", "Villagers"], logStats.top_villager_killers.map(r => [r.name, r.villagers])],
+        ["Connection Churn (logs)", ["Player", "Disconnects", "Short Sessions"], logStats.connection_churn.map(r => [iconCell(r.player, playerAvatarUrl(r.player)), r.disconnects, r.short_sessions])]
+      ];
+      defs.forEach(([title, headers, rows]) => {
+        if (!rows || rows.length === 0) return;
+        const card = makeCard(title, makeTable(headers, rows));
+        container.appendChild(card);
+      });
+    }
+
     const SNARK = [
       "Pro tip: maybe pack a totem next time.",
       "Ouch. Beds are for sleeping, not exploding.",
@@ -439,7 +478,12 @@
       });
     }
 
-    fetchStats().then(render).catch(err => {
+    Promise.all([fetchStats(), fetchLogStats()])
+      .then(([stats, logStats]) => {
+        render(stats);
+        renderLogTables(logStats);
+      })
+      .catch(err => {
       document.body.innerHTML = '<div style="color:white">Failed to load stats: ' + err + '</div>';
       console.error(err);
     });
