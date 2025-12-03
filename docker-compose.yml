@@ -7,11 +7,15 @@ services:
       - "${PORT:-5000}:${PORT:-5000}"
     environment:
       - LEDGER_DB=/app/ledger.sqlite
+      - LEDGER_DB_PATH=${LEDGER_DB_PATH:?Set LEDGER_DB_PATH to absolute ledger.sqlite path}
       - STATS_LIMIT=${STATS_LIMIT:-10}
       - STATS_CACHE_TTL=${STATS_CACHE_TTL:-1800}
       - PORT=${PORT:-5000}
     volumes:
-      - "${LEDGER_DB_PATH:-./ledger.sqlite}:/app/ledger.sqlite:ro"
+      - type: bind
+        source: ${LEDGER_DB_PATH:?Set LEDGER_DB_PATH to absolute ledger.sqlite path}
+        target: /app/ledger.sqlite
+        read_only: true
     deploy:
       restart_policy:
         condition: on-failure

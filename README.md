@@ -52,7 +52,7 @@ LEDGER_DB_PATH=/absolute/path/to/ledger.sqlite \
 PORT=5000 \
 docker-compose up -d
 ```
-Environment defaults: `STATS_LIMIT=10`, `STATS_CACHE_TTL=1800`, `PORT=5000`. For Swarm (`docker stack deploy`), pre-build/push `mc-ledger-stats:latest` and ensure the ledger path is available on the node (or use a shared volume).
+Environment defaults: `STATS_LIMIT=10`, `STATS_CACHE_TTL=1800`, `PORT=5000`. `LEDGER_DB_PATH` must be an absolute path (required for Swarm bind mounts). For Swarm (`docker stack deploy`), pre-build/push `mc-ledger-stats:latest` and ensure the ledger path is available on the node (or use a shared volume).
 
 Swarm example (single node, prebuilt image):
 ```bash
