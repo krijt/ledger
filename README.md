@@ -70,6 +70,8 @@ docker stack deploy -c docker-compose.yml siemcraft
   Generate stats to stdout.
 - `./scripts/refresh_stats.sh`  
   Writes `public/stats.json` and `public/stats.md` (uses `DB_PATH`/`OUT_DIR` envs).
+- `python scripts/log_stats.py logs/ --limit 5`  
+  Parse `.log`/`.log.gz` server logs to surface playtime, deaths (players + villagers), advancements, and connection churn.
 
 ## Testing
 - Install dev deps: `python -m pip install -r requirements-dev.txt`
